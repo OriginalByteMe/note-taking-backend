@@ -1,12 +1,8 @@
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import Sequelize from 'sequelize';
 
-// For ES modules compatibility
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const basename = path.basename(__filename);
+const basename = path.basename(import.meta.filename);
 
 /**
  * Initializes and loads all models
@@ -19,7 +15,7 @@ export const initializeModels = async (sequelize) => {
   
   // Get all model files except index.js
   const modelFiles = fs
-    .readdirSync(__dirname)
+    .readdirSync(import.meta.dirname)
     .filter(file => {
       return (
         file.indexOf('.') !== 0 &&
@@ -32,7 +28,7 @@ export const initializeModels = async (sequelize) => {
   // Import and initialize each model
   for (const file of modelFiles) {
     try {
-      const modulePath = path.join(__dirname, file);
+      const modulePath = path.join(import.meta.dirname, file);
       const module = await import(modulePath);
       const model = module.default(sequelize, Sequelize.DataTypes);
       db[model.name] = model;
