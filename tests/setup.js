@@ -10,7 +10,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '../.env.test') });
 
 // Global variables for test suite
-let db;
+export let db;
 
 // Setup - runs before all tests
 export async function setupDatabase() {
@@ -26,7 +26,7 @@ export async function setupDatabase() {
         
         // Force sync all models (recreate tables)
         await sequelize.sync({ force: true });
-        console.log('Test database initialized successfully with SQLite');
+     
         
         return db;
     } catch (error) {
@@ -37,9 +37,15 @@ export async function setupDatabase() {
 
 // Teardown - runs after all tests
 export async function teardownDatabase() {
-    if (db && db.sequelize) {
-        await db.sequelize.close();
-        console.log('Test database connection closed');
+    try {
+        if (db && db.sequelize) {
+            // Close the connection pool
+            await db.sequelize.close();
+            // Explicitly set to null to help garbage collection
+            db.sequelize = null;
+        }
+    } catch (error) {
+        console.error('Error closing database connection:', error);
     }
 }
 
@@ -87,56 +93,14 @@ export async function clearDatabase() {
                     cascade: true,
                     restartIdentity: true 
                 });
-                console.log(`Cleared table: ${tableName}`);
             }
         }
 
         // Re-enable foreign key checks
         await db.sequelize.query('PRAGMA foreign_keys = ON;');
-
-        console.log('Database cleared successfully');
     } catch (error) {
         console.error('Error clearing database:', error);
         throw error;
     }
 }
 
-// Create test user
-export async function createTestUser(overrides = {}) {
-    if (!db) {
-        throw new Error('Database not initialized. Call setupDatabase() first.');
-    }
-
-    return db.User.create({
-        username: 'testuser',
-        email: 'test@example.com',
-        password: 'password123',
-        ...overrides
-    });
-}
-
-// Create test note with versioning support (for optimistic locking)
-export async function createTestNote(userId, overrides = {}) {
-    if (!db) {
-        throw new Error('Database not initialized. Call setupDatabase() first.');
-    }
-
-    const note = await db.Note.create({
-        title: 'Test Note',
-        content: 'This is a test note content',
-        userId,
-        version: 1,
-        ...overrides
-    });
-
-    // Create initial note version
-    await db.NoteVersion.create({
-        noteId: note.id,
-        title: note.title,
-        content: note.content,
-        version: 1,
-        createdBy: userId
-    });
-
-    return note;
-}
