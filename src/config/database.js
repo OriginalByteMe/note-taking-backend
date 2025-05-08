@@ -1,18 +1,19 @@
 import { Sequelize } from 'sequelize';
-import dotenv from 'dotenv';
+import config from './config.js';
 
-dotenv.config();
+const env = process.env.NODE_ENV || 'development';
+const dbConfig = config[env];
 
 const sequelize = new Sequelize(
-  process.env.DB_NAME,
-  process.env.DB_USER,
-  process.env.DB_PASS,
+  dbConfig.database,
+  dbConfig.username,
+  dbConfig.password,
   {
-    host: process.env.DB_HOST,
-    dialect: 'mysql',
-    logging: false,
-    pool: {
-      max: 10,
+    host: dbConfig.host,
+    dialect: dbConfig.dialect,
+    logging: dbConfig.logging === undefined ? console.log : dbConfig.logging,
+    pool: dbConfig.pool || {
+      max: 5,
       min: 0,
       acquire: 30000,
       idle: 10000,
@@ -24,7 +25,7 @@ const sequelize = new Sequelize(
 const testConnection = async () => {
   try {
     await sequelize.authenticate();
-    console.log('MySQL connection has been established successfully.');
+    console.log(`MySQL connection to ${env} database has been established successfully.`);
   } catch (error) {
     console.error('Unable to connect to the database:', error);
   }
