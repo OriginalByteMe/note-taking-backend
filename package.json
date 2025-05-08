@@ -16,6 +16,7 @@
     "init:db": "npm run migrate && npm run seed"
   },
   "dependencies": {
+    "bcrypt": "^5.1.1",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "dotenv": "^16.5.0",
