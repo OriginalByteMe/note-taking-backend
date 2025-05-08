@@ -13,6 +13,8 @@ services:
       # Redis environment variables
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      JWT_SECRET: "@eTxzX@fG7Xk!3r4vmB8R3eZ"
+      JWT_EXPIRES_IN: 24h
     ports:
       - 3000:3000
     depends_on:

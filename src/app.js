@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import cookieParser from 'cookie-parser';
 import logger from 'morgan';
 import dotenv from 'dotenv';
+import { errorHandler } from './middlewares/errorHandler.js';
 
 // Load environment variables
 dotenv.config();
@@ -33,5 +34,15 @@ app.use(express.static(path.join(import.meta.dirname, 'public')));
 app.use('/health', healthRouter);
 app.use('/notes', noteRouter);
 app.use('/users', userRouter);
+
+// 404 handler - for routes that don't exist
+app.use((req, res, next) => {
+  const error = new Error(`Not Found - ${req.originalUrl}`);
+  error.statusCode = 404;
+  next(error);
+});
+
+// Global error handler
+app.use(errorHandler);
 
 export default app;
