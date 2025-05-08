@@ -17,6 +17,8 @@ import { initializeConnections } from './config/index.js';
 
 // Import routes
 import healthRouter from './routes/health.js';
+import noteRouter from './routes/note.js';
+import userRouter from './routes/user.js';
 
 const app = express();
 
@@ -33,5 +35,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/health', healthRouter);
+app.use('/notes', noteRouter);
+app.use('/users', userRouter);
 
 export default app;
