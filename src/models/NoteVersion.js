@@ -3,9 +3,8 @@ import { Model, DataTypes } from 'sequelize';
 export default (sequelize) => {
   class NoteVersion extends Model {
     static associate(models) {
-      // Define associations here
       this.belongsTo(models.Note, { foreignKey: 'noteId' });
-      this.belongsTo(models.User, { foreignKey: 'createdBy', as: 'creator' });
+      this.belongsTo(models.User, { foreignKey: 'createdBy' });
     }
   }
 

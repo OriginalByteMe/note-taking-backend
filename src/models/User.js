@@ -4,9 +4,8 @@ import bcrypt from 'bcrypt';
 export default (sequelize) => {
   class User extends Model {
     static associate(models) {
-      // Define associations here
       this.hasMany(models.Note, { foreignKey: 'userId' });
-      this.hasMany(models.NoteVersion, { foreignKey: 'createdBy', as: 'createdVersions' });
+      this.hasMany(models.NoteVersion, { foreignKey: 'createdBy' });
     }
 
     // Method to check if password matches

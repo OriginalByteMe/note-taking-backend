@@ -3,7 +3,6 @@ import { Model, DataTypes } from 'sequelize';
 export default (sequelize) => {
   class Note extends Model {
     static associate(models) {
-      // Define associations here
       this.belongsTo(models.User, { foreignKey: 'userId' });
       this.hasMany(models.NoteVersion, { foreignKey: 'noteId' });
     }
