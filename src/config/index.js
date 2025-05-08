@@ -1,11 +1,15 @@
-import sequelize from './database.js';
+import { db, sequelize, initialize } from './database.js';
 import redisClient from '../cache/redis.js';
 
 const initializeConnections = async () => {
   try {
-
+    // Initialize database and models
+    await initialize();
+    
+    // Redis client handles its own connection in cache/redis.js
     console.log('All database connections initialized');
     return {
+      db,
       sequelize,
       redisClient
     };
@@ -15,4 +19,4 @@ const initializeConnections = async () => {
   }
 };
 
-export { sequelize, redisClient, initializeConnections };
+export { sequelize, redisClient, initializeConnections, db };
