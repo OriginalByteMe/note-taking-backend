@@ -120,7 +120,7 @@ describe('User Routes', () => {
   describe('Get All Users Endpoint - GET /users', () => {
     it('should get all users', async () => {
       // Create test users
-      await createTestUser({ username: 'testuser1', email: 'test1@example.com' });
+      const user = await createTestUser({ username: 'testuser1', email: 'test1@example.com' });
       await createTestUser({ username: 'testuser2', email: 'test2@example.com' });
       // Use withAuth with protectedRequest
       const res = await withAuth(

@@ -3,6 +3,7 @@
  */
 import express from 'express';
 import request from 'supertest';
+import { faker } from '@faker-js/faker';
 import { authenticate, generateToken } from '../../src/middlewares/auth.js';
 import { errorHandler } from '../../src/middlewares/errorHandler.js';
 import { db } from '../setup.js';
@@ -146,9 +147,9 @@ export const withAuth = (request, user) => {
  */
 export const createUserData = (overrides = {}) => {
   return {
-    username: 'testuser',
-    email: 'test@example.com',
-    password: 'password123',
+    username: faker.internet.userName(),
+    email: faker.internet.email(),
+    password: faker.internet.password(12),
     ...overrides
   };
 };
@@ -162,8 +163,8 @@ export const createUserData = (overrides = {}) => {
  */
 export const createNoteData = (userId, overrides = {}) => {
   return {
-    title: 'Test Note',
-    content: 'This is a test note content',
+    title: faker.lorem.sentence(),
+    content: faker.lorem.paragraphs(2),
     userId,
     version: 1, // Version for optimistic locking
     ...overrides
