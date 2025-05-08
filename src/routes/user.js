@@ -1,5 +1,6 @@
 import express from 'express';
 import { db } from '../config/database.js';
+import { generateToken, authenticate } from '../middlewares/auth.js';
 
 const router = express.Router();
 
@@ -76,12 +77,19 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // For now, just return the user data without tokens
-    // In a real authentication system, this would generate and return tokens
+    // Generate JWT token
+    const token = generateToken(user);
+    
+    // Prepare user response without password
     const userResponse = user.toJSON();
     delete userResponse.password;
 
-    return res.json({ user: userResponse, message: 'Login successful' });
+    return res.json({ 
+      user: userResponse, 
+      token, 
+      expiresIn: '1h',
+      message: 'Login successful' 
+    });
   } catch (error) {
     console.error('Error logging in:', error);
     return res.status(500).json({ error: 'Failed to login' });
@@ -89,10 +97,10 @@ router.post('/login', async (req, res) => {
 });
 
 /**
- * Get all users
+ * Get all users (admin only in a real app)
  * GET /users
  */
-router.get('/', async (req, res) => {
+router.get('/', authenticate, async (req, res) => {
   try {
     const users = await db.User.findAll({
       attributes: { exclude: ['password'] }
@@ -108,9 +116,16 @@ router.get('/', async (req, res) => {
  * Get a specific user
  * GET /users/:id
  */
-router.get('/:id', async (req, res) => {
+router.get('/:id', authenticate, async (req, res) => {
   try {
-    const user = await db.User.findByPk(req.params.id, {
+    const userId = req.params.id;
+    
+    // Check if user is requesting their own info or an admin
+    if (req.user.id !== parseInt(userId)) {
+      return res.status(403).json({ error: 'Forbidden: You can only access your own account information' });
+    }
+    
+    const user = await db.User.findByPk(userId, {
       attributes: { exclude: ['password'] }
     });
 
@@ -129,10 +144,15 @@ router.get('/:id', async (req, res) => {
  * Update a user
  * PUT /users/:id
  */
-router.put('/:id', async (req, res) => {
+router.put('/:id', authenticate, async (req, res) => {
   try {
     const { username, email, password } = req.body;
     const userId = req.params.id;
+    
+    // Check if user is updating their own account
+    if (req.user.id !== parseInt(userId)) {
+      return res.status(403).json({ error: 'Forbidden: You can only update your own account' });
+    }
 
     const user = await db.User.findByPk(userId);
     if (!user) {
@@ -162,9 +182,14 @@ router.put('/:id', async (req, res) => {
  * Delete a user
  * DELETE /users/:id
  */
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticate, async (req, res) => {
   try {
     const userId = req.params.id;
+    
+    // Check if user is deleting their own account
+    if (req.user.id !== parseInt(userId)) {
+      return res.status(403).json({ error: 'Forbidden: You can only delete your own account' });
+    }
     
     const user = await db.User.findByPk(userId);
     if (!user) {

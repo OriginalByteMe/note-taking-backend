@@ -1,20 +1,17 @@
 import express from 'express';
 import { db } from '../config/database.js';
+import { authenticate } from '../middlewares/auth.js';
 
 const router = express.Router();
-
-// TODO: This will be replaced with proper authentication middleware
-// For now, we're using a fixed user ID for testing
-const DEFAULT_USER_ID = 1;
 
 /**
  * Create a new note
  * POST /notes
  */
-router.post('/', async (req, res) => {
+router.post('/', authenticate, async (req, res) => {
   try {
     const { title, content } = req.body;
-    const userId = DEFAULT_USER_ID;
+    const userId = req.user.id; // Get user ID from authenticated user
     
     if (!title || !content) {
       return res.status(400).json({ error: 'Title and content are required' });
@@ -49,9 +46,9 @@ router.post('/', async (req, res) => {
  * Get all notes for authenticated user
  * GET /notes
  */
-router.get('/', async (req, res) => {
+router.get('/', authenticate, async (req, res) => {
   try {
-    const userId = DEFAULT_USER_ID;
+    const userId = req.user.id;
     // Get notes from database
     const notes = await db.Note.findAll({
       where: {
@@ -72,10 +69,10 @@ router.get('/', async (req, res) => {
  * Get a specific note by ID
  * GET /notes/:id
  */
-router.get('/:id', async (req, res) => {
+router.get('/:id', authenticate, async (req, res) => {
   try {
     const noteId = req.params.id;
-    const userId = DEFAULT_USER_ID;
+    const userId = req.user.id;
     // Get note from database
     const note = await db.Note.findOne({
       where: {
@@ -100,10 +97,10 @@ router.get('/:id', async (req, res) => {
  * Get note versions
  * GET /notes/:id/versions
  */
-router.get('/:id/versions', async (req, res) => {
+router.get('/:id/versions', authenticate, async (req, res) => {
   try {
     const noteId = req.params.id;
-    const userId = DEFAULT_USER_ID;
+    const userId = req.user.id;
     
     // Check if note belongs to user
     const note = await db.Note.findOne({
@@ -136,11 +133,11 @@ router.get('/:id/versions', async (req, res) => {
  * Revert to a specific version
  * POST /notes/:id/revert/:version
  */
-router.post('/:id/revert/:version', async (req, res) => {
+router.post('/:id/revert/:version', authenticate, async (req, res) => {
   try {
     const noteId = req.params.id;
     const versionNumber = req.params.version;
-    const userId = DEFAULT_USER_ID;
+    const userId = req.user.id;
     
     // Start a transaction
     const transaction = await db.sequelize.transaction();
@@ -216,10 +213,10 @@ router.post('/:id/revert/:version', async (req, res) => {
  * Update a note
  * PUT /notes/:id
  */
-router.put('/:id', async (req, res) => {
+router.put('/:id', authenticate, async (req, res) => {
   try {
     const noteId = req.params.id;
-    const userId = DEFAULT_USER_ID;
+    const userId = req.user.id;
     const { title, content, version: clientVersion } = req.body;
     
     if (!title || !content || !clientVersion) {
@@ -290,10 +287,10 @@ router.put('/:id', async (req, res) => {
  * Search notes by keywords
  * GET /notes/search?q=keyword
  */
-router.get('/search', async (req, res) => {
+router.get('/search', authenticate, async (req, res) => {
   try {
     const query = req.query.q;
-    const userId = DEFAULT_USER_ID;
+    const userId = req.user.id;
     
     if (!query) {
       return res.status(400).json({ error: 'Search query is required' });
@@ -323,10 +320,10 @@ router.get('/search', async (req, res) => {
  * Soft delete a note
  * DELETE /notes/:id
  */
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticate, async (req, res) => {
   try {
     const noteId = req.params.id;
-    const userId = DEFAULT_USER_ID;
+    const userId = req.user.id;
     
     // Start a transaction
     const transaction = await db.sequelize.transaction();
