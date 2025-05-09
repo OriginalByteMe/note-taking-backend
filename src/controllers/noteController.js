@@ -358,39 +358,28 @@ export const searchNotes = asyncHandler(async (req, res) => {
 
 /**
  * Permanently delete a note and all its versions 
+ * (No version checking required since entire note history is removed)
  */
 export const deleteNote = asyncHandler(async (req, res) => {
   const noteId = req.params.id;
   const userId = req.user.id;
-  const clientVersion = req.query.version;
   
   // Start a transaction
   const transaction = await db.sequelize.transaction();
   
   try {
-    // Get the note with a lock for update
+    // Get the note
     const note = await db.Note.findOne({
       where: {
         id: noteId,
         userId
       },
-      lock: transaction.LOCK.UPDATE,
       transaction
     });
     
     if (!note) {
       await transaction.rollback();
       return res.status(404).json({ error: 'Note not found' });
-    }
-    
-    // Check for version conflict (optimistic locking)
-    if (parseInt(clientVersion) !== note.version) {
-      await transaction.rollback();
-      return res.status(409).json({
-        error: 'Version conflict. The note has been modified since you last retrieved it.',
-        clientVersion: parseInt(clientVersion),
-        serverVersion: note.version
-      });
     }
     
     // Delete all versions of the note

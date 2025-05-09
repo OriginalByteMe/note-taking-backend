@@ -212,22 +212,69 @@ describe('Note Routes with Redis Cache', () => {
   });
   
   describe('DELETE /notes/:id (deleteNote)', () => {
-    it('should invalidate all related caches after deleting a note', async () => {
+    it('should invalidate all related caches after permanently deleting a note', async () => {
       const note = await createTestNote(testUser.id);
       
       const res = await withAuth(
-        request.delete(`/notes/${note.id}?version=${note.version}`),
+        request.delete(`/notes/${note.id}`),
         testUser
       );
       
       expect(res.statusCode).toBe(200);
+      expect(res.body.message).toContain('permanently deleted');
       
-      // Verify cache invalidation
+      // Verify note and version cache invalidation
       expect(noteCache.invalidateAllNoteCache).toHaveBeenCalledWith(
         note.id.toString(),
         testUser.id
       );
+      
+      // Verify search results cache invalidation
       expect(noteCache.invalidateSearchResults).toHaveBeenCalledWith(testUser.id);
+    });
+  });
+  
+  describe('PUT /notes/:id/soft-delete (softDeleteNote)', () => {
+    it('should invalidate all related caches after soft-deleting a note', async () => {
+      const note = await createTestNote(testUser.id);
+      
+      const res = await withAuth(
+        request.put(`/notes/${note.id}/soft-delete?version=${note.version}`),
+        testUser
+      );
+      
+      expect(res.statusCode).toBe(200);
+      expect(res.body.message).toContain('soft-deleted');
+      
+      // Verify note and version cache invalidation
+      expect(noteCache.invalidateAllNoteCache).toHaveBeenCalledWith(
+        note.id.toString(),
+        testUser.id
+      );
+      
+      // Verify search results cache invalidation
+      expect(noteCache.invalidateSearchResults).toHaveBeenCalledWith(testUser.id);
+      
+      // Verify the note was marked as deleted
+      const deletedNote = await db.Note.findByPk(note.id);
+      expect(deletedNote).not.toBeNull();
+      expect(deletedNote.isDeleted).toBe(true);
+    });
+    
+    it('should return 409 on version conflict during soft-delete', async () => {
+      const note = await createTestNote(testUser.id);
+      
+      const res = await withAuth(
+        request.put(`/notes/${note.id}/soft-delete?version=${note.version-1}`),
+        testUser
+      );
+      
+      expect(res.statusCode).toBe(409);
+      expect(res.body.error).toContain('Version conflict');
+      
+      // Verify cache was NOT invalidated since operation failed
+      expect(noteCache.invalidateAllNoteCache).not.toHaveBeenCalled();
+      expect(noteCache.invalidateSearchResults).not.toHaveBeenCalled();
     });
   });
   
