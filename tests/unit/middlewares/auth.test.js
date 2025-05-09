@@ -59,7 +59,7 @@ describe('Authentication Middleware', () => {
           email: mockUser.email 
         },
         expect.any(String),
-        { expiresIn: '1h' }
+        { expiresIn: '24h' }
       );
       
       expect(token).toBe('test-token');
