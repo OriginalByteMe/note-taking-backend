@@ -3,7 +3,7 @@ import { db } from '../config/database.js';
 
 // JWT secret key - in production, this should be in environment variables
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-for-development';
-const TOKEN_EXPIRY = '1h'; // Token expires in 1 hour
+const TOKEN_EXPIRY = process.env.TOKEN_EXPIRY || '24h'; // Token expires in 1 hour
 
 /**
  * Generate a JWT token for a user
