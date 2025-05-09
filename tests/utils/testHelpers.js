@@ -147,7 +147,7 @@ export const withAuth = (request, user) => {
  */
 export const createUserData = (overrides = {}) => {
   return {
-    username: faker.internet.userName(),
+    username: faker.internet.username(),
     email: faker.internet.email(),
     password: faker.internet.password(12),
     ...overrides
