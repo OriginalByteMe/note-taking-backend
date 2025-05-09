@@ -1,16 +1,5 @@
 import { jest } from '@jest/globals';
 
-// Mock the redis client
-jest.mock('../../../src/cache/redis.js', () => ({
-  __esModule: true,
-  default: {
-    setEx: jest.fn().mockResolvedValue('OK'),
-    get: jest.fn(),
-    del: jest.fn().mockResolvedValue(1),
-    keys: jest.fn().mockResolvedValue([])
-  }
-}));
-
 import redisClient from '../../../src/cache/redis.js';
 import noteCache from '../../../src/cache/noteCache.js';
 

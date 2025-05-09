@@ -8,16 +8,6 @@ import {
 } from '../utils/testHelpers.js';
 import { db } from '../setup.js';
 
-// Mock Redis client and noteCache
-jest.mock('../../src/cache/redis.js', () => ({
-  __esModule: true,
-  default: {
-    setEx: jest.fn().mockResolvedValue('OK'),
-    get: jest.fn(),
-    del: jest.fn().mockResolvedValue(1),
-    keys: jest.fn().mockResolvedValue([])
-  }
-}));
 
 jest.mock('../../src/cache/noteCache.js', () => ({
   __esModule: true,

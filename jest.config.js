@@ -29,11 +29,14 @@ export default {
       testMatch: ["<rootDir>/tests/unit/middlewares/**/*.test.js"],
       // Load DB mock before modules so middleware tests use the mock
       setupFiles: ["<rootDir>/tests/setupMiddlewareMocks.js"],
+      // Add Redis mock for middleware tests
+      setupFilesAfterEnv: ["<rootDir>/tests/setupRedisMock.js"]
     },
     {
       displayName: "default",
       testMatch: ["<rootDir>/tests/**/*.test.js", "!<rootDir>/tests/unit/middlewares/**/*.test.js"],
-      setupFilesAfterEnv: ["<rootDir>/tests/setupJest.js"]
+      // Load Redis mock for all tests
+      setupFilesAfterEnv: ["<rootDir>/tests/setupJest.js", "<rootDir>/tests/setupRedisMock.js"]
     }
   ],
   
