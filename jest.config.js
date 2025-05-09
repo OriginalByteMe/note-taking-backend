@@ -22,8 +22,20 @@ export default {
     "!src/seeders/**"
   ],
   
-  // A list of paths to modules that run some code to configure or set up the testing framework before each test
-  setupFilesAfterEnv: ["./tests/setupJest.js"],
+  // Use setupMiddlewareMocks.js only for middleware tests, and setupJest.js for all
+  projects: [
+    {
+      displayName: "middlewares",
+      testMatch: ["<rootDir>/tests/unit/middlewares/**/*.test.js"],
+      // Load DB mock before modules so middleware tests use the mock
+      setupFiles: ["<rootDir>/tests/setupMiddlewareMocks.js"],
+    },
+    {
+      displayName: "default",
+      testMatch: ["<rootDir>/tests/**/*.test.js", "!<rootDir>/tests/unit/middlewares/**/*.test.js"],
+      setupFilesAfterEnv: ["<rootDir>/tests/setupJest.js"]
+    }
+  ],
   
   // Use babel to transform ES modules
   transform: {
