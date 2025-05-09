@@ -6,10 +6,6 @@ import logger from 'morgan';
 import dotenv from 'dotenv';
 import { errorHandler } from './middlewares/errorHandler.js';
 
-// ES Modules fix for __dirname
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 // Load environment variables
 dotenv.config();
 
@@ -33,7 +29,7 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(import.meta.dirname, 'public')));
 
 app.use('/health', healthRouter);
 app.use('/notes', noteRouter);
