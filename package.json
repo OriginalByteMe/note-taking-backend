@@ -6,8 +6,8 @@
   "scripts": {
     "start": "node ./src/bin/www",
     "dev": "nodemon ./src/bin/www",
-    "test": "NODE_ENV=test jest --coverage",
-    "test:watch": "NODE_ENV=test jest --watch",
+    "test": "NODE_ENV=test jest --coverage --silent",
+    "test:watch": "NODE_ENV=test jest --watch --silent",
     "migrate": "sequelize-cli db:migrate",
     "migrate:undo": "sequelize-cli db:migrate:undo",
     "migrate:reset": "sequelize-cli db:migrate:undo:all && npm run migrate",
