@@ -1,0 +1,20 @@
+{
+  "name": "Note-Taking API",
+  "version": "1.0.0",
+  "description": "API documentation for the Note-Taking backend application",
+  "title": "Note-Taking API Documentation",
+  "url": "http://localhost:3000",
+  "sampleUrl": "http://localhost:3000",
+  "header": {
+    "title": "Introduction",
+    "content": "<h1>Note-Taking API</h1><p>This documentation provides details about the endpoints available in the Note-Taking API.</p><p>The API features user authentication, note management with versioning, concurrency control, and full-text search.</p>"
+  },
+  "footer": {
+    "title": "Additional Information",
+    "content": "<h3>Authentication</h3><p>Most endpoints require authentication via a Bearer JWT token in the Authorization header.</p><h3>Errors</h3><p>The API returns standard HTTP status codes with JSON error messages.</p>"
+  },
+  "template": {
+    "withCompare": true,
+    "withGenerator": true
+  }
+}
