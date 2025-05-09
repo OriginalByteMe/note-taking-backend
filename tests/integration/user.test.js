@@ -1,4 +1,4 @@
-import userRoutes from '../src/routes/user.js';
+import userRoutes from '../../src/routes/user.js';
 import { 
   createTestApp, 
   createTestRequest, 
@@ -6,8 +6,8 @@ import {
   withAuth,
   mockModelMethod,
   createTestUser,
-} from './utils/testHelpers.js';
-import { db } from './setup.js';
+} from '../utils/testHelpers.js';
+import { db } from '../setup.js';
 
 // Create two test apps - one with auth middleware enabled for protected routes
 // and one without auth for public routes like registration and login
