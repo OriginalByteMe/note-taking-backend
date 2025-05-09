@@ -294,36 +294,117 @@ describe('Note Routes', () => {
   });
 
   describe('Delete Note Endpoint - DELETE /notes/:id', () => {
-    it('should soft delete a note successfully', async () => {
+    it('should permanently delete a note and its versions successfully', async () => {
       const note = await createTestNote(testUser.id);
-
+      
+      // Get the note ID before deletion
+      const noteId = note.id;
+      
+      // Create a couple of versions by updating
+      await withAuth(
+        request.put(`/notes/${noteId}`).send({
+          title: 'Updated Title',
+          content: 'Updated content',
+          version: note.version
+        }),
+        testUser
+      );
+      
+      // Count versions before deletion
+      const versionCountBefore = await db.NoteVersion.count({ where: { noteId } });
+      expect(versionCountBefore).toBeGreaterThan(0);
+      
       const res = await withAuth(
-        request.delete(`/notes/${note.id}?version=${note.version}`),
+        request.delete(`/notes/${noteId}`),
         testUser
       );
 
       expect(res.statusCode).toBe(200);
-      expect(res.body.message).toContain('deleted successfully');
+      expect(res.body.message).toContain('permanently deleted successfully');
 
-      // Verify the note is soft deleted
-      const deletedNote = await db.Note.findByPk(note.id);
-      expect(deletedNote.isDeleted).toBe(true);
+      // Verify the note is actually deleted from database
+      const deletedNote = await db.Note.findByPk(noteId);
+      expect(deletedNote).toBeNull();
+      
+      // Verify all versions are deleted
+      const versionCount = await db.NoteVersion.count({ where: { noteId } });
+      expect(versionCount).toBe(0);
     });
 
     it('should return 404 when note not found', async () => {
       const res = await withAuth(
-        request.delete('/notes/999?version=1'),
+        request.delete('/notes/999'),
         testUser
       );
 
       expect(res.statusCode).toBe(404);
     });
 
-    it('should return 409 when version conflict occurs', async () => {
+    it('should return 401 when not authenticated', async () => {
+      const note = await createTestNote(testUser.id);
+      const res = await request.delete(`/notes/${note.id}`);
+      expect(res.statusCode).toBe(401);
+    });
+  });
+  
+  describe('Soft Delete Note Endpoint - PUT /notes/:id/soft-delete', () => {
+    it('should soft delete a note successfully', async () => {
       const note = await createTestNote(testUser.id);
 
       const res = await withAuth(
-        request.delete(`/notes/${note.id}?version=${note.version - 1}`),
+        request.put(`/notes/${note.id}/soft-delete?version=${note.version}`),
+        testUser
+      );
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.message).toContain('soft-deleted successfully');
+
+      // Verify the note is marked as deleted but still exists
+      const deletedNote = await db.Note.findByPk(note.id);
+      expect(deletedNote).not.toBeNull();
+      expect(deletedNote.isDeleted).toBe(true);
+      
+      // Verify a new version was created for the soft delete
+      const versions = await db.NoteVersion.findAll({
+        where: { noteId: note.id },
+        order: [['version', 'DESC']]
+      });
+      expect(versions.length).toBeGreaterThan(1);
+      expect(versions[0].version).toBe(note.version + 1);
+    });
+    
+    it('should return 404 when trying to soft-delete a non-existent note', async () => {
+      const res = await withAuth(
+        request.put('/notes/999/soft-delete?version=1'),
+        testUser
+      );
+
+      expect(res.statusCode).toBe(404);
+    });
+    
+    it('should return 404 when trying to soft-delete an already soft-deleted note', async () => {
+      const note = await createTestNote(testUser.id);
+      
+      // First soft-delete
+      await withAuth(
+        request.put(`/notes/${note.id}/soft-delete?version=${note.version}`),
+        testUser
+      );
+      
+      // Try to soft-delete again
+      const res = await withAuth(
+        request.put(`/notes/${note.id}/soft-delete?version=${note.version + 1}`),
+        testUser
+      );
+      
+      expect(res.statusCode).toBe(404);
+    });
+
+    it('should return 409 when version conflict occurs during soft-delete', async () => {
+      const note = await createTestNote(testUser.id);
+
+      const res = await withAuth(
+        request.put(`/notes/${note.id}/soft-delete?version=${note.version - 1}`),
         testUser
       );
 
@@ -331,9 +412,9 @@ describe('Note Routes', () => {
       expect(res.body.error).toContain('Version conflict');
     });
 
-    it('should return 401 when not authenticated', async () => {
+    it('should return 401 when not authenticated for soft-delete', async () => {
       const note = await createTestNote(testUser.id);
-      const res = await request.delete(`/notes/${note.id}?version=${note.version}`);
+      const res = await request.put(`/notes/${note.id}/soft-delete?version=${note.version}`);
       expect(res.statusCode).toBe(401);
     });
   });
@@ -484,7 +565,6 @@ describe('Note Routes', () => {
         request.get('/notes/search?q=timeline'),
         testUser
       );
-
       expect(res.statusCode).toBe(200);
       expect(Array.isArray(res.body)).toBe(true);
       expect(res.body.length).toBe(2); // Should match both notes with "timeline"
@@ -540,7 +620,7 @@ describe('Note Routes', () => {
       );
 
       expect(res.statusCode).toBe(200);
-      expect(res.body.message).toContain('Conflict successfully resolved');
+      expect(res.body.message).toContain('Conflict resolved successfully');
       expect(res.body.note.title).toBe('Resolved Title');
       expect(res.body.note.version).toBe(note.version + 1);
 

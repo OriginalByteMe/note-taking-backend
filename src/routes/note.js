@@ -9,6 +9,7 @@ import {
   updateNote,
   searchNotes,
   deleteNote,
+  softDeleteNote,
   resolveConflict
 } from '../controllers/noteController.js';
 import {
@@ -66,10 +67,16 @@ router.post('/:id/revert/:version', authenticate, validateNoteId, validateRevert
 router.put('/:id', authenticate, validateNoteId, validateUpdateNote, updateNote);
 
 /**
- * Soft delete a note
- * DELETE /notes/:id?version=X
+ * Permanently delete a note and all its versions
+ * DELETE /notes/:id
  */
-router.delete('/:id', authenticate, validateNoteId, validateDeleteNote, deleteNote);
+router.delete('/:id', authenticate, validateNoteId, deleteNote);
+
+/**
+ * Soft delete a note (mark as deleted but preserve in database)
+ * PUT /notes/:id/soft-delete?version=X
+ */
+router.put('/:id/soft-delete', authenticate, validateNoteId, validateDeleteNote, softDeleteNote);
 
 /**
  * Resolve a version conflict
