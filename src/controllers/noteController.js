@@ -203,7 +203,12 @@ export const revertToVersion = asyncHandler(async (req, res) => {
     await transaction.commit();
     
     // Invalidate all related caches
-    await noteCache.invalidateAllNoteCache(noteId, userId);
+    try {
+      await noteCache.invalidateAllNoteCache(noteId, userId);
+    } catch (cacheError) {
+      console.error('Error invalidating cache:', cacheError);
+      // Continue execution even if cache invalidation fails
+    }
     
     return res.json({
       message: `Successfully reverted to version ${versionNumber}`,
@@ -295,7 +300,12 @@ export const updateNote = asyncHandler(async (req, res) => {
     await transaction.commit();
     
     // Invalidate all related caches
-    await noteCache.invalidateAllNoteCache(noteId, userId);
+    try {
+      await noteCache.invalidateAllNoteCache(noteId, userId);
+    } catch (cacheError) {
+      console.error('Error invalidating cache:', cacheError);
+      // Continue execution even if cache invalidation fails
+    }
     
     return res.json(note);
   } catch (error) {
@@ -394,9 +404,14 @@ export const deleteNote = asyncHandler(async (req, res) => {
     await transaction.commit();
     
     // Invalidate all related caches
-    await noteCache.invalidateAllNoteCache(noteId, userId);
-    // Also invalidate search results as they might contain this note
-    await noteCache.invalidateSearchResults(userId);
+    try {
+      await noteCache.invalidateAllNoteCache(noteId, userId);
+      // Also invalidate search results as they might contain this note
+      await noteCache.invalidateSearchResults(userId);
+    } catch (cacheError) {
+      console.error('Error invalidating cache:', cacheError);
+      // Continue execution even if cache invalidation fails
+    }
     
     return res.json({ message: 'Note permanently deleted successfully' });
   } catch (error) {
@@ -467,9 +482,14 @@ export const softDeleteNote = asyncHandler(async (req, res) => {
     await transaction.commit();
     
     // Invalidate all related caches
-    await noteCache.invalidateAllNoteCache(noteId, userId);
-    // Also invalidate search results as they might contain this note
-    await noteCache.invalidateSearchResults(userId);
+    try {
+      await noteCache.invalidateAllNoteCache(noteId, userId);
+      // Also invalidate search results as they might contain this note
+      await noteCache.invalidateSearchResults(userId);
+    } catch (cacheError) {
+      console.error('Error invalidating cache:', cacheError);
+      // Continue execution even if cache invalidation fails
+    }
     
     return res.json({ message: 'Note soft-deleted successfully' });
   } catch (error) {
@@ -547,9 +567,14 @@ export const resolveConflict = asyncHandler(async (req, res) => {
     await transaction.commit();
     
     // Invalidate all related caches
-    await noteCache.invalidateAllNoteCache(noteId, userId);
-    // Also invalidate search results as they might contain this note
-    await noteCache.invalidateSearchResults(userId);
+    try {
+      await noteCache.invalidateAllNoteCache(noteId, userId);
+      // Also invalidate search results as they might contain this note
+      await noteCache.invalidateSearchResults(userId);
+    } catch (cacheError) {
+      console.error('Error invalidating cache:', cacheError);
+      // Continue execution even if cache invalidation fails
+    }
     
     return res.json({
       message: 'Conflict resolved successfully',

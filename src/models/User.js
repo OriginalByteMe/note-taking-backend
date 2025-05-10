@@ -6,6 +6,26 @@ export default (sequelize) => {
     static associate(models) {
       this.hasMany(models.Note, { foreignKey: 'userId' });
       this.hasMany(models.NoteVersion, { foreignKey: 'createdBy' });
+      
+      // Add associations for note sharing as owner
+      this.hasMany(models.NoteShare, { 
+        foreignKey: 'ownerId',
+        as: 'sharedNotes'
+      });
+      
+      // Add associations for note sharing as recipient
+      this.hasMany(models.NoteShare, {
+        foreignKey: 'sharedWithId',
+        as: 'receivedShares'
+      });
+      
+      // Notes shared with this user
+      this.belongsToMany(models.Note, {
+        through: models.NoteShare,
+        foreignKey: 'sharedWithId',
+        otherKey: 'noteId',
+        as: 'notesSharedWithMe'
+      });
     }
 
     // Method to check if password matches

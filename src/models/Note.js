@@ -5,6 +5,17 @@ export default (sequelize) => {
     static associate(models) {
       this.belongsTo(models.User, { foreignKey: 'userId' });
       this.hasMany(models.NoteVersion, { foreignKey: 'noteId' });
+      
+      // Add associations for note sharing
+      this.hasMany(models.NoteShare, { foreignKey: 'noteId' });
+      
+      // Users who have access to this note through shares
+      this.belongsToMany(models.User, { 
+        through: models.NoteShare,
+        foreignKey: 'noteId',
+        otherKey: 'sharedWithId',
+        as: 'sharedWith'
+      });
     }
   }
 

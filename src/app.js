@@ -16,6 +16,7 @@ import { initializeConnections } from './config/index.js';
 import healthRouter from './routes/health.js';
 import noteRouter from './routes/note.js';
 import userRouter from './routes/user.js';
+import noteShareRoutes from './routes/noteShare.js';
 
 const app = express();
 
@@ -34,6 +35,7 @@ app.use(express.static(path.join(import.meta.dirname, 'public')));
 app.use('/health', healthRouter);
 app.use('/notes', noteRouter);
 app.use('/users', userRouter);
+app.use('/notes', noteShareRoutes);
 
 // 404 handler - for routes that don't exist
 app.use((req, res, next) => {

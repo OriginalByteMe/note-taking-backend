@@ -36,7 +36,7 @@ jest.mock('../../src/cache/noteCache.js', () => ({
   }
 }));
 
-import redisClient from '../../src/cache/redis.js';
+
 import noteCache from '../../src/cache/noteCache.js';
 
 // Create test app for authenticated routes
