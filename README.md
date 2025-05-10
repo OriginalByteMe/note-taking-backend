@@ -2,6 +2,7 @@
 
 A RESTful API backend application for note-taking with versioning, concurrency control, and full-text search capabilities.
 
+### A little side note, if you want to see an AI generated version of this documentation with an AI bot you can ask questions about this wiki, check out: https://deepwiki.com/OriginalByteMe/note-taking-backend/1-overview
 ## Table of Contents
 
 - [Features](#features)
@@ -191,6 +192,8 @@ npm test -- -t "user service"
 ```
 
 ## API Documentation
+
+You can view a similar hosted version on a website here: https://originalbyteme.github.io/note-taking-backend/
 
 The API provides the following endpoints:
 
